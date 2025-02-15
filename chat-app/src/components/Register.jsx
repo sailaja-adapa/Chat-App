@@ -34,7 +34,7 @@ const Register = () => {
           email: formData.email,
           password: formData.password,
         }
-      );
+      );      
 
       if (response.status === 200) {
         toast.success("🎉 Registration Successful! Redirecting to login...", {

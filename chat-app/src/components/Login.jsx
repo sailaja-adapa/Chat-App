@@ -26,35 +26,38 @@ const Login = () => {
     e.preventDefault();
 
     if (!credentials.email || !credentials.password) {
-      toast.error("Please fill in all fields", { position: "top-center" });
+      toast.error("❌ Please fill in all fields", { position: "top-center" });
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await axios.post("https://chat-app-6-9b0u.onrender.com/api/auth/local", {
-        identifier: credentials.email, // Strapi uses 'identifier' for email
-        password: credentials.password,
-      });
+      const response = await axios.post(
+        "https://chat-app-6-9b0u.onrender.com/api/auth/local",
+        {
+          identifier: credentials.email, // Strapi uses 'identifier' for email
+          password: credentials.password,
+        }
+      );
 
       if (response.status === 200 && response.data.jwt) {
         localStorage.setItem("user", JSON.stringify(response.data.user));
         localStorage.setItem("jwt", response.data.jwt);
 
-        toast.success("Login successful! Redirecting...", {
+        toast.success("🎉 Login successful! Redirecting...", {
           position: "top-center",
           autoClose: 2000,
         });
 
         setTimeout(() => navigate("/chat"), 2000);
-      } else {
-        toast.error("Invalid login credentials", { position: "top-center" });
       }
     } catch (error) {
-      toast.error(error.response?.data?.error?.message || "Something went wrong", {
-        position: "top-center",
-      });
+      console.error("Login error:", error.response?.data || error.message);
+      toast.error(
+        error.response?.data?.error?.message || "❌ Invalid credentials",
+        { position: "top-center" }
+      );
     } finally {
       setLoading(false);
     }

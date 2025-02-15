@@ -21,7 +21,8 @@ import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import io from "socket.io-client";
 
-const socket = io("https://chat-lsne.onrender.com/");
+// Connect to WebSocket
+const socket = io("https://chat-app-7-nxw2.onrender.com");
 
 const ChatApp = () => {
   const navigate = useNavigate();
@@ -72,24 +73,13 @@ const ChatApp = () => {
       console.log("Fetched Chat History (all):", data);
 
       if (data.data) {
-        // Log the first item to see its structure:
-        console.log("First item in data.data:", data.data[0]);
-
-        // Map each item: if item.attributes exists, use it; otherwise, use the item itself.
-        const allMessages = data.data.map((item) => {
-          return item.attributes ? item.attributes : item;
-        });
+        const allMessages = data.data.map((item) => item.attributes || item);
         console.log("All Messages after mapping:", allMessages);
 
-        // Filter messages by comparing sender values (case-insensitive)
-        const userHistory = allMessages.filter((msg) => {
-          console.log("Comparing message sender:", msg.sender, "with username:", username);
-          return (
-            msg.sender &&
-            typeof msg.sender === "string" &&
-            msg.sender.trim().toLowerCase() === username.trim().toLowerCase()
-          );
-        });
+        const userHistory = allMessages.filter((msg) =>
+          msg.sender?.trim().toLowerCase() === username.trim().toLowerCase()
+        );
+
         console.log("Filtered History for user", username, ":", userHistory);
         setHistoryChats(userHistory);
       } else {
@@ -104,41 +94,46 @@ const ChatApp = () => {
   const startNewChat = () => {
     setMessages([]); // Clear active messages
     fetchChatHistory(); // Refresh chat history immediately
-  };
-  
-
-  // Send a message
-  const sendMessage = async () => {
+  };const sendMessage = async () => {
     if (message.trim()) {
       const newMessage = {
         sender: username,
         content: message,
-        timestamp: new Date().toISOString(),
-        status: "sent",
+        timestamp: new Date().toISOString(), // Format correctly
       };
-
+  
+      // Send message to WebSocket server
       setMessages((prev) => [...prev, newMessage]);
       socket.emit("message", newMessage);
       setMessage("");
-
+  
       try {
         const response = await fetch("https://chat-app-6-9b0u.onrender.com/api/messages", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: newMessage }),
+          headers: {
+            "Content-Type": "application/json",
+            // If authentication is required:
+            // "Authorization": `Bearer ${localStorage.getItem("jwt")}`,
+          },
+          body: JSON.stringify({ data: newMessage }), // ✅ Correct payload format for Strapi
         });
-
+  
+        const result = await response.json();
+        console.log("API Response:", result);
+  
         if (!response.ok) {
-          console.error("Failed to store message in Strapi");
+          console.error("Failed to store message in Strapi:", result.error);
+        } else {
+          console.log("Message successfully stored in Strapi.");
         }
       } catch (error) {
         console.error("Error storing message:", error);
       }
-
+  
       scrollToBottom();
     }
   };
-
+  
   const handleProfileClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleLogout = () => {
@@ -205,17 +200,7 @@ const ChatApp = () => {
         {/* Chat Messages */}
         <Box sx={{ maxHeight: 400, overflowY: "auto", p: 2, borderRadius: 2, bgcolor: "#ffffff" }}>
           {messages.map((msg, index) => (
-            <Box
-              key={index}
-              sx={{
-                my: 1,
-                p: 1.5,
-                borderRadius: 2,
-                bgcolor: msg.sender === username ? "#dcf8c6" : "#e3f2fd",
-                boxShadow: 2,
-                alignSelf: msg.sender === username ? "flex-end" : "flex-start",
-              }}
-            >
+            <Box key={index} sx={{ my: 1, p: 1.5, borderRadius: 2, bgcolor: msg.sender === username ? "#dcf8c6" : "#e3f2fd" }}>
               <Typography variant="body2">{msg.content}</Typography>
               <Typography variant="caption" sx={{ display: "block", textAlign: "right", color: "gray" }}>
                 {new Date(msg.timestamp).toLocaleTimeString()}
@@ -227,14 +212,7 @@ const ChatApp = () => {
 
         {/* Message Input */}
         <Box display="flex" gap={1} mt={2}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Type a message..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-          />
+          <TextField fullWidth variant="outlined" placeholder="Type a message..." value={message} onChange={(e) => setMessage(e.target.value)} />
           <Button variant="contained" color="primary" onClick={sendMessage}>
             <SendIcon />
           </Button>
