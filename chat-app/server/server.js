@@ -1,65 +1,62 @@
+require("dotenv").config(); // Load environment variables from .env file
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const axios = require("axios");
+
 const app = express();
 const server = http.createServer(app);
 
-// Set up Socket.IO server
+// Use environment variable for PORT (default to 5000)
+const PORT = process.env.PORT || 5000;
+
+// Use environment variable for Strapi URL
+const strapiUrl = process.env.STRAPI_URL || "http://localhost:1337"; // Fallback for local development
+
+// Set up Socket.IO with CORS
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // React frontend URL
+    origin: process.env.FRONTEND_URL || "http://localhost:3000", // Allow frontend access
     methods: ["GET", "POST"],
   },
 });
 
-// Use CORS middleware to allow cross-origin requests
+// Middleware
 app.use(cors());
-app.use(express.json()); // Middleware to parse JSON bodies
+app.use(express.json());
 
-// Strapi API endpoint URL (adjust if your Strapi is running on a different port)
-const strapiUrl = "http://localhost:1337"; // Default Strapi URL
-
-// WebSocket event handler
+// WebSocket event handlers
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
-  // Handle incoming messages from the client
   socket.on("message", async (msg) => {
     console.log("Message received:", msg);
 
-    // Destructure sender, content, and timestamp from the incoming message
     const { sender, content, timestamp } = msg;
 
     // Save the message to Strapi
     try {
       const response = await axios.post(`${strapiUrl}/api/messages`, {
-        data: {
-          sender,
-          content,
-          timestamp, // Save the timestamp as well
-        },
+        data: { sender, content, timestamp },
       });
 
-      if (response.status === 200) {
-        console.log("Message saved to Strapi:", response.data);
-      }
+      console.log("Message saved to Strapi:", response.data);
     } catch (error) {
       console.error("Error saving message to Strapi:", error);
     }
 
-    // Echo the message back to the client with sender 'server'
-    io.emit("message", { sender: "server", content, timestamp }); // Send timestamp back
+    // Broadcast message to all clients
+    io.emit("message", { sender: "server", content, timestamp });
   });
 
-  // Handle disconnection
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
 });
 
-// Start the server on port 5000
-server.listen(5000, () => {
-  console.log("Server running on http://localhost:5000");
+// Start server
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
