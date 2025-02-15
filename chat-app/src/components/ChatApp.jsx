@@ -21,7 +21,7 @@ import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://chat-app-2-pvjj.onrender.com");
 
 const ChatApp = () => {
   const navigate = useNavigate();
