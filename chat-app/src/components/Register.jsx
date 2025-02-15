@@ -28,7 +28,7 @@ const Register = () => {
   const handleRegister = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:1337/api/auth/local/register",
+        "https://chat-app-6-9b0u.onrender.com/api/auth/local/register",
         {
           username: formData.username,
           email: formData.email,
@@ -192,4 +192,3 @@ const Register = () => {
 };
 
 export default Register;
- 

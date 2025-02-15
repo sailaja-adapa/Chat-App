@@ -33,7 +33,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:1337/api/auth/local", {
+      const response = await axios.post("https://chat-app-6-9b0u.onrender.com/api/auth/local", {
         identifier: credentials.email, // Strapi uses 'identifier' for email
         password: credentials.password,
       });

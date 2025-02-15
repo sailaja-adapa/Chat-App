@@ -21,7 +21,7 @@ import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import io from "socket.io-client";
 
-const socket = io("https://chat-app-2-pvjj.onrender.com");
+const socket = io("https://chat-lsne.onrender.com/");
 
 const ChatApp = () => {
   const navigate = useNavigate();
@@ -65,7 +65,7 @@ const ChatApp = () => {
   // Fetch messages from Strapi's "Message" collection
   const fetchChatHistory = async () => {
     try {
-      const url = "http://localhost:1337/api/messages";
+      const url = "https://chat-app-6-9b0u.onrender.com/api/messages";
       console.log("Fetching all messages from:", url);
       const response = await fetch(url);
       const data = await response.json();
@@ -122,7 +122,7 @@ const ChatApp = () => {
       setMessage("");
 
       try {
-        const response = await fetch("http://localhost:1337/api/messages", {
+        const response = await fetch("https://chat-app-6-9b0u.onrender.com/api/messages", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ data: newMessage }),
