@@ -1,6 +1,8 @@
 import React from "react";
 import { AppBar, Toolbar, Button, Typography, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import AppRegistrationIcon from "@mui/icons-material/AppRegistration";
+import LoginIcon from "@mui/icons-material/Login";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -28,10 +30,18 @@ const Dashboard = () => {
               Dashboard
             </Typography>
           </Box>
-          <Button sx={{ color: "white" }} onClick={() => navigate("/register")}>
+          <Button
+            sx={{ color: "white" }}
+            startIcon={<AppRegistrationIcon />}
+            onClick={() => navigate("/register")}
+          >
             Register
           </Button>
-          <Button sx={{ color: "white" }} onClick={() => navigate("/login")}>
+          <Button
+            sx={{ color: "white" }}
+            startIcon={<LoginIcon />}
+            onClick={() => navigate("/login")}
+          >
             Login
           </Button>
         </Toolbar>
