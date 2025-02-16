@@ -20,14 +20,15 @@ import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import io from "socket.io-client";
 
+// Connect to your Socket.io server
 const socket = io("https://serverurl.onrender.com");
 
 const ChatApp = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
-  const [historyChats, setHistoryChats] = useState([]);
+  const [messages, setMessages] = useState([]); // Active chat messages
+  const [historyChats, setHistoryChats] = useState([]); // Chat history
   const [anchorEl, setAnchorEl] = useState(null);
   const messagesEndRef = useRef(null);
 
@@ -141,36 +142,20 @@ const ChatApp = () => {
         }}
       >
         <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2 }}>
-          <Paper
-            sx={{
-              flex: "0 0 250px",
-              p: 2,
-              border: "2px solid black",
-              borderRadius: 2,
-              minHeight: 400,
-              overflowY: "auto",
-            }}
-          >
+          {/* Chat History Container */}
+          <Paper sx={{ flex: "0 0 250px", p: 2, border: "2px solid black", borderRadius: 2, minHeight: 400, overflowY: "auto" }}>
             <Typography variant="h6" fontWeight="bold" mb={1}>
               Chat History
             </Typography>
             <List>
               {historyChats.length > 0 ? (
-                historyChats.map((chat, index) =>
-                  chat?.content ? (
-                    <ListItem key={index}>
-                      <ListItemText primary={chat.content} secondary={`From: ${chat.sender}`} />
-                    </ListItem>
-                  ) : (
-                    <ListItem key={index}>
-                      <ListItemText primary="Invalid message data" />
-                    </ListItem>
-                  )
-                )
+                historyChats.map((chat, index) => (
+                  <ListItem key={index}>
+                    <ListItemText primary={chat.content} secondary={`From: ${chat.sender}`} />
+                  </ListItem>
+                ))
               ) : (
-                <Typography variant="body2" color="gray">
-                  No chat history
-                </Typography>
+                <Typography variant="body2" color="gray">No chat history</Typography>
               )}
             </List>
             <Divider sx={{ my: 1 }} />
@@ -179,26 +164,15 @@ const ChatApp = () => {
             </Button>
           </Paper>
 
-          <Paper
-            sx={{
-              flex: 1,
-              p: 2,
-              border: "2px solid black",
-              borderRadius: 2,
-              display: "flex",
-              flexDirection: "column",
-              minHeight: 400,
-            }}
-          >
+          {/* Active Chat Container */}
+          <Paper sx={{ flex: 1, p: 2, border: "2px solid black", borderRadius: 2, display: "flex", flexDirection: "column", minHeight: 400 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
               <Typography variant="h5" fontWeight="bold" color="primary">
                 Active Chat
               </Typography>
               <Box>
                 <IconButton onClick={handleProfileClick}>
-                  <Avatar>
-                    <AccountCircleIcon />
-                  </Avatar>
+                  <Avatar><AccountCircleIcon /></Avatar>
                 </IconButton>
                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
                   <MenuItem disabled>Signed in as: {username}</MenuItem>
@@ -208,15 +182,25 @@ const ChatApp = () => {
             </Box>
 
             <Paper sx={{ p: 2, bgcolor: "#ffffff", overflowY: "auto", flex: 1, borderRadius: 2 }}>
-              {messages.map((msg, index) => (
-                <Box key={index} sx={{ display: "flex", justifyContent: msg.sender === username ? "flex-end" : "flex-start", mb: 1 }}>
-                  <Box sx={{ p: 1.5, borderRadius: 2, maxWidth: "70%", backgroundColor: msg.sender === username ? "#dcf8c6" : "#e3f2fd", boxShadow: 1 }}>
-                    <Typography variant="body2" sx={{ wordWrap: "break-word", fontWeight: "bold" }}>{msg.sender}</Typography>
-                    <Typography variant="body2" sx={{ wordWrap: "break-word" }}>{msg.content}</Typography>
-                    <Typography variant="caption" sx={{ display: "block", textAlign: "right", color: "gray" }}>{new Date(msg.timestamp).toLocaleTimeString()}</Typography>
+              {messages.map((msg, index) => {
+                const isUser = msg.sender === username;
+                const isServer = msg.sender === "Server";
+                return (
+                  <Box key={index} sx={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start", mb: 1 }}>
+                    <Box sx={{
+                      p: 1.5, borderRadius: 2, maxWidth: "70%",
+                      backgroundColor: isUser ? "#dcf8c6" : isServer ? "#e0e0e0" : "#e3f2fd",
+                      boxShadow: 1
+                    }}>
+                      <Typography variant="caption" fontWeight="bold">{msg.sender}</Typography>
+                      <Typography variant="body2" sx={{ wordWrap: "break-word" }}>{msg.content}</Typography>
+                      <Typography variant="caption" sx={{ display: "block", textAlign: "right", color: "gray" }}>
+                        {new Date(msg.timestamp).toLocaleTimeString()}
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
-              ))}
+                );
+              })}
               <div ref={messagesEndRef} />
             </Paper>
 
@@ -232,3 +216,4 @@ const ChatApp = () => {
 };
 
 export default ChatApp;
+
