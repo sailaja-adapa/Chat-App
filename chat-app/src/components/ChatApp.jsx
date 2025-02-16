@@ -32,7 +32,6 @@ const ChatApp = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const messagesEndRef = useRef(null);
 
-  // On mount: get user info & setup socket connection
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user && user.username) {
@@ -41,13 +40,9 @@ const ChatApp = () => {
       navigate("/login");
     }
 
-    socket.on("connect", () =>
-      console.log("Connected with ID:", socket.id)
-    );
+    socket.on("connect", () => console.log("Connected with ID:", socket.id));
 
     socket.on("message", (newMessage) => {
-      // Previously, we marked own messages as server echo.
-      // Now, we want to show all messages from the user on the right.
       setMessages((prev) => [...prev, newMessage]);
       scrollToBottom();
     });
@@ -55,9 +50,8 @@ const ChatApp = () => {
     return () => {
       socket.off("message");
     };
-  }, [navigate, username]);
+  }, [navigate]);
 
-  // Fetch chat history once username is set
   useEffect(() => {
     if (username) {
       fetchChatHistory();
@@ -66,15 +60,12 @@ const ChatApp = () => {
 
   const fetchChatHistory = async () => {
     try {
-      const url = "https://chat-app-6-9b0u.onrender.com/api/messages";
-      const response = await fetch(url);
+      const response = await fetch("https://chat-app-6-9b0u.onrender.com/api/messages");
       const data = await response.json();
       if (data.data) {
-        const allMessages = data.data.map((item) => item.attributes || item);
-        const userHistory = allMessages.filter(
-          (msg) =>
-            msg.sender?.trim().toLowerCase() === username.trim().toLowerCase()
-        );
+        const userHistory = data.data
+          .map((item) => item.attributes || item)
+          .filter((msg) => msg.sender?.trim().toLowerCase() === username.trim().toLowerCase());
         setHistoryChats(userHistory);
       }
     } catch (error) {
@@ -82,33 +73,20 @@ const ChatApp = () => {
     }
   };
 
-  // Send message via button click or Enter key press
   const sendMessage = async () => {
     if (message.trim()) {
-      const newMessage = {
-        sender: username,
-        content: message,
-        timestamp: new Date().toISOString(),
-      };
+      const newMessage = { sender: username, content: message, timestamp: new Date().toISOString() };
 
-      // Optimistically update messages
       setMessages((prev) => [...prev, newMessage]);
       socket.emit("message", newMessage);
       setMessage("");
 
       try {
-        const response = await fetch(
-          "https://chat-app-6-9b0u.onrender.com/api/messages",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ data: newMessage }),
-          }
-        );
-        const result = await response.json();
-        if (!response.ok) {
-          console.error("Failed to store message:", result.error);
-        }
+        await fetch("https://chat-app-6-9b0u.onrender.com/api/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: newMessage }),
+        });
       } catch (error) {
         console.error("Error storing message:", error);
       }
@@ -128,7 +106,6 @@ const ChatApp = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Profile menu handlers
   const handleProfileClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleLogout = () => {
@@ -145,24 +122,26 @@ const ChatApp = () => {
   return (
     <Box
       sx={{
-        backgroundImage:
-          'url(https://botnation.ai/site/wp-content/uploads/2024/01/chatbot-leads.webp)',
+        backgroundImage: 'url(https://botnation.ai/site/wp-content/uploads/2024/01/chatbot-leads.webp)',
         backgroundSize: "cover",
         backgroundPosition: "center",
         minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
         p: 4,
       }}
     >
       <Paper
         sx={{
+          width: "90%",
           maxWidth: 900,
-          mx: "auto",
           p: 4,
           borderRadius: 3,
-          backgroundColor: "rgba(255,255,255,0.7)",
+          backgroundColor: "rgba(255,255,255,0.85)",
         }}
       >
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2 }}>
           {/* Chat History Container */}
           <Paper
             sx={{
@@ -170,6 +149,8 @@ const ChatApp = () => {
               p: 2,
               border: "2px solid black",
               borderRadius: 2,
+              minHeight: 400,
+              overflowY: "auto",
             }}
           >
             <Typography variant="h6" fontWeight="bold" mb={1}>
@@ -180,10 +161,7 @@ const ChatApp = () => {
                 historyChats.map((chat, index) =>
                   chat?.content ? (
                     <ListItem key={index}>
-                      <ListItemText
-                        primary={chat.content}
-                        secondary={`From: ${chat.sender}`}
-                      />
+                      <ListItemText primary={chat.content} secondary={`From: ${chat.sender}`} />
                     </ListItem>
                   ) : (
                     <ListItem key={index}>
@@ -198,12 +176,7 @@ const ChatApp = () => {
               )}
             </List>
             <Divider sx={{ my: 1 }} />
-            <Button
-              startIcon={<AddIcon />}
-              fullWidth
-              variant="contained"
-              onClick={startNewChat}
-            >
+            <Button startIcon={<AddIcon />} fullWidth variant="contained" onClick={startNewChat}>
               New Chat
             </Button>
           </Paper>
@@ -217,16 +190,10 @@ const ChatApp = () => {
               borderRadius: 2,
               display: "flex",
               flexDirection: "column",
+              minHeight: 400,
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 2,
-              }}
-            >
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
               <Typography variant="h5" fontWeight="bold" color="primary">
                 Active Chat
               </Typography>
@@ -236,59 +203,19 @@ const ChatApp = () => {
                     <AccountCircleIcon />
                   </Avatar>
                 </IconButton>
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleClose}
-                >
+                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
                   <MenuItem disabled>Signed in as: {username}</MenuItem>
                   <MenuItem onClick={handleLogout}>Logout</MenuItem>
                 </Menu>
               </Box>
             </Box>
 
-            <Paper
-              sx={{
-                p: 2,
-                bgcolor: "#ffffff",
-                overflowY: "auto",
-                maxHeight: 400,
-                borderRadius: 2,
-              }}
-            >
+            <Paper sx={{ p: 2, bgcolor: "#ffffff", overflowY: "auto", flex: 1, borderRadius: 2 }}>
               {messages.map((msg, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    justifyContent:
-                      msg.sender === username ? "flex-end" : "flex-start",
-                    mb: 1,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      maxWidth: "70%",
-                      backgroundColor:
-                        msg.sender === username ? "#dcf8c6" : "#e3f2fd",
-                      boxShadow: 1,
-                    }}
-                  >
-                    <Typography variant="body2" sx={{ wordWrap: "break-word" }}>
-                      {msg.content}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        display: "block",
-                        textAlign: "right",
-                        color: "gray",
-                      }}
-                    >
-                      {new Date(msg.timestamp).toLocaleTimeString()}
-                    </Typography>
+                <Box key={index} sx={{ display: "flex", justifyContent: msg.sender === username ? "flex-end" : "flex-start", mb: 1 }}>
+                  <Box sx={{ p: 1.5, borderRadius: 2, maxWidth: "70%", backgroundColor: msg.sender === username ? "#dcf8c6" : "#e3f2fd", boxShadow: 1 }}>
+                    <Typography variant="body2" sx={{ wordWrap: "break-word" }}>{msg.content}</Typography>
+                    <Typography variant="caption" sx={{ display: "block", textAlign: "right", color: "gray" }}>{new Date(msg.timestamp).toLocaleTimeString()}</Typography>
                   </Box>
                 </Box>
               ))}
@@ -296,19 +223,8 @@ const ChatApp = () => {
             </Paper>
 
             <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
-              <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Type a message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                multiline
-                maxRows={4}
-              />
-              <Button variant="contained" color="primary" onClick={sendMessage}>
-                <SendIcon />
-              </Button>
+              <TextField fullWidth variant="outlined" placeholder="Type a message..." value={message} onChange={(e) => setMessage(e.target.value)} onKeyDown={handleKeyDown} multiline maxRows={4} />
+              <Button variant="contained" color="primary" onClick={sendMessage}><SendIcon /></Button>
             </Box>
           </Paper>
         </Box>
@@ -316,4 +232,5 @@ const ChatApp = () => {
     </Box>
   );
 };
+
 export default ChatApp;

@@ -71,7 +71,7 @@ const Login = () => {
         alignItems: "center",
         justifyContent: "center",
         flexDirection: "column",
-        backgroundImage: `url('https://gloriumtech.com/wp-content/uploads/2022/09/cover.png')`,
+        backgroundImage: `url('https://img.freepik.com/premium-vector/artificial-intelligence-cybernetic-robot-high-technology-create-artificial-intelligence-ai-concept-vector-illustration_34230-836.jpg?ga=GA1.1.494612788.1718189209&semt=ais_hybridg')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
@@ -86,6 +86,8 @@ const Login = () => {
           backdropFilter: "blur(10px)",
           backgroundColor: "rgba(255, 255, 255, 0.8)",
           borderRadius: 3,
+          position: "relative",
+          left: "-260px", // Moves container slightly to the left
         }}
       >
         <Typography variant="h5" sx={{ fontWeight: "bold", marginBottom: 2 }}>
