@@ -3,6 +3,7 @@ import { useState } from "react";  // Assuming you're using React state
 import ChatApp from "./components/ChatApp";
 import Register from "./components/Register";
 import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
 
 function App() {
   // Define isAuthenticated state (for demonstration)
@@ -12,6 +13,7 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
+        <Route path="/" element={<Dashboard />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/chat" element={<ChatApp /> }/>
