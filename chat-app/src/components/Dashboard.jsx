@@ -9,27 +9,34 @@ const Dashboard = () => {
     <Box
       sx={{
         height: "110vh",
-        backgroundImage: `url("https://img.freepik.com/premium-vector/chatbot-customer-service-abstract-concept-vector-illustration_107173-25718.jpg?ga=GA1.1.494612788.1718189209&semt=ais_hybrid")`, // Add full Base64 string
+        backgroundImage: `url("https://cdn.analyticsvidhya.com/wp-content/uploads/2023/07/ck340ov180hsy65g0yxb6gbhb-1-chatbots-for-marketing-smm.one-half_4fnXbfN.png")`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
       }}
     >
-      <AppBar position="static">
+      <AppBar
+        position="static"
+        sx={{
+          backgroundColor: "rgba(19, 146, 210, 0.7)", // Blue with 70% transparency
+          boxShadow: "none",
+        }}
+      >
         <Toolbar>
           <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="h6">Dashboard</Typography>
+            <Typography variant="h6" sx={{ color: "white" }}>
+              Dashboard
+            </Typography>
           </Box>
-          <Button color="inherit" onClick={() => navigate("/register")}>
+          <Button sx={{ color: "white" }} onClick={() => navigate("/register")}>
             Register
           </Button>
-          <Button color="inherit" onClick={() => navigate("/login")}>
+          <Button sx={{ color: "white" }} onClick={() => navigate("/login")}>
             Login
           </Button>
         </Toolbar>
       </AppBar>
-      <Box sx={{ p: 3 }}>
-      </Box>
+      <Box sx={{ p: 3 }}></Box>
     </Box>
   );
 };

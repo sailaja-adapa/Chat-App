@@ -71,7 +71,7 @@ const Login = () => {
         alignItems: "center",
         justifyContent: "center",
         flexDirection: "column",
-        backgroundImage: `url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbnFMFz_PC5XKL47zTI-alZTld2w5atgRkuQ&s')`,
+        backgroundImage: `url('https://gloriumtech.com/wp-content/uploads/2022/09/cover.png')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}

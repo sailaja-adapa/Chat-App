@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  Container,
+  Box,
+  Paper,
   TextField,
   Button,
-  Paper,
   Typography,
-  Box,
   IconButton,
   Menu,
   MenuItem,
@@ -21,7 +20,7 @@ import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import io from "socket.io-client";
 
-// Connect to the Socket.io server on port 5004
+// Connect to your Socket.io server
 const socket = io("https://serverurl.onrender.com");
 
 const ChatApp = () => {
@@ -33,7 +32,7 @@ const ChatApp = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const messagesEndRef = useRef(null);
 
-  // Retrieve logged-in user and connect socket
+  // On mount: get user info & setup socket connection
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user && user.username) {
@@ -43,15 +42,12 @@ const ChatApp = () => {
     }
 
     socket.on("connect", () =>
-      console.log("Connected to socket with ID:", socket.id)
+      console.log("Connected with ID:", socket.id)
     );
 
-    // Listen for incoming messages from server/others
     socket.on("message", (newMessage) => {
-      // If the message is from the current user, mark it as a server echo.
-      if (newMessage.sender === username) {
-        newMessage.isServerEcho = true;
-      }
+      // Previously, we marked own messages as server echo.
+      // Now, we want to show all messages from the user on the right.
       setMessages((prev) => [...prev, newMessage]);
       scrollToBottom();
     });
@@ -61,7 +57,7 @@ const ChatApp = () => {
     };
   }, [navigate, username]);
 
-  // Fetch chat history from your API
+  // Fetch chat history once username is set
   useEffect(() => {
     if (username) {
       fetchChatHistory();
@@ -74,9 +70,7 @@ const ChatApp = () => {
       const response = await fetch(url);
       const data = await response.json();
       if (data.data) {
-        // Map data to message objects
         const allMessages = data.data.map((item) => item.attributes || item);
-        // Optionally, filter messages for chat history if needed
         const userHistory = allMessages.filter(
           (msg) =>
             msg.sender?.trim().toLowerCase() === username.trim().toLowerCase()
@@ -88,7 +82,7 @@ const ChatApp = () => {
     }
   };
 
-  // Send message (triggered by button click or Enter key)
+  // Send message via button click or Enter key press
   const sendMessage = async () => {
     if (message.trim()) {
       const newMessage = {
@@ -97,7 +91,7 @@ const ChatApp = () => {
         timestamp: new Date().toISOString(),
       };
 
-      // Optimistic update: show user message immediately on the right
+      // Optimistically update messages
       setMessages((prev) => [...prev, newMessage]);
       socket.emit("message", newMessage);
       setMessage("");
@@ -123,7 +117,6 @@ const ChatApp = () => {
     }
   };
 
-  // Handle Enter key press to send message
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -131,7 +124,6 @@ const ChatApp = () => {
     }
   };
 
-  // Scroll to the bottom of the chat window
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -145,155 +137,183 @@ const ChatApp = () => {
     navigate("/login");
   };
 
-  // Start a new chat (clears active chat and refreshes history)
   const startNewChat = () => {
     setMessages([]);
     fetchChatHistory();
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, display: "flex" }}>
-      {/* Sidebar: Chat History */}
-      <Paper elevation={3} sx={{ width: 250, p: 2, mr: 2, borderRadius: 3 }}>
-        <Typography variant="h6" fontWeight="bold">
-          Chat History
-        </Typography>
-        <List>
-          {historyChats.length > 0 ? (
-            historyChats.map((chat, index) =>
-              chat?.content ? (
-                <ListItem key={index}>
-                  <ListItemText
-                    primary={chat.content}
-                    secondary={`From: ${chat.sender}`}
-                  />
-                </ListItem>
-              ) : (
-                <ListItem key={index}>
-                  <ListItemText primary="Invalid message data" />
-                </ListItem>
-              )
-            )
-          ) : (
-            <Typography variant="body2" color="gray">
-              No chat history
-            </Typography>
-          )}
-        </List>
-        <Divider sx={{ my: 1 }} />
-        <Button
-          startIcon={<AddIcon />}
-          fullWidth
-          variant="contained"
-          onClick={startNewChat}
-        >
-          New Chat
-        </Button>
-      </Paper>
-
-      {/* Main Chat Window */}
+    <Box
+      sx={{
+        backgroundImage:
+          'url(https://botnation.ai/site/wp-content/uploads/2024/01/chatbot-leads.webp)',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        minHeight: "100vh",
+        p: 4,
+      }}
+    >
       <Paper
-        elevation={6}
-        sx={{ flex: 1, p: 3, borderRadius: 3, bgcolor: "#f4f6f8" }}
+        sx={{
+          maxWidth: 900,
+          mx: "auto",
+          p: 4,
+          borderRadius: 3,
+          backgroundColor: "rgba(255,255,255,0.7)",
+        }}
       >
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          pb={2}
-        >
-          <Typography variant="h5" fontWeight="bold" color="primary">
-            Active Chat
-          </Typography>
-          <Box>
-            <IconButton onClick={handleProfileClick}>
-              <Avatar>
-                <AccountCircleIcon />
-              </Avatar>
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
+        <Box sx={{ display: "flex", gap: 2 }}>
+          {/* Chat History Container */}
+          <Paper
+            sx={{
+              flex: "0 0 250px",
+              p: 2,
+              border: "2px solid black",
+              borderRadius: 2,
+            }}
+          >
+            <Typography variant="h6" fontWeight="bold" mb={1}>
+              Chat History
+            </Typography>
+            <List>
+              {historyChats.length > 0 ? (
+                historyChats.map((chat, index) =>
+                  chat?.content ? (
+                    <ListItem key={index}>
+                      <ListItemText
+                        primary={chat.content}
+                        secondary={`From: ${chat.sender}`}
+                      />
+                    </ListItem>
+                  ) : (
+                    <ListItem key={index}>
+                      <ListItemText primary="Invalid message data" />
+                    </ListItem>
+                  )
+                )
+              ) : (
+                <Typography variant="body2" color="gray">
+                  No chat history
+                </Typography>
+              )}
+            </List>
+            <Divider sx={{ my: 1 }} />
+            <Button
+              startIcon={<AddIcon />}
+              fullWidth
+              variant="contained"
+              onClick={startNewChat}
             >
-              <MenuItem disabled>Signed in as: {username}</MenuItem>
-              <MenuItem onClick={handleLogout}>Logout</MenuItem>
-            </Menu>
-          </Box>
-        </Box>
+              New Chat
+            </Button>
+          </Paper>
 
-        {/* Chat Messages */}
-        <Box
-          sx={{
-            maxHeight: 400,
-            overflowY: "auto",
-            p: 2,
-            borderRadius: 2,
-            bgcolor: "#ffffff",
-          }}
-        >
-          {messages.map((msg, index) => (
+          {/* Active Chat Container */}
+          <Paper
+            sx={{
+              flex: 1,
+              p: 2,
+              border: "2px solid black",
+              borderRadius: 2,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             <Box
-              key={index}
               sx={{
                 display: "flex",
-                // If the message is from the user and not a server echo, align right;
-                // otherwise (server echo or messages from others), align left.
-                justifyContent:
-                  msg.sender === username && !msg.isServerEcho
-                    ? "flex-end"
-                    : "flex-start",
-                mb: 1,
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
               }}
             >
-              <Box
-                sx={{
-                  p: 1.5,
-                  borderRadius: 2,
-                  maxWidth: "70%",
-                  // Use a different background color for the user’s optimistic messages
-                  // and server echoes (which appear on the left).
-                  backgroundColor:
-                    msg.sender === username && !msg.isServerEcho
-                      ? "#dcf8c6"
-                      : "#e3f2fd",
-                  boxShadow: 1,
-                }}
-              >
-                <Typography variant="body2" sx={{ wordWrap: "break-word" }}>
-                  {msg.content}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ display: "block", textAlign: "right", color: "gray" }}
+              <Typography variant="h5" fontWeight="bold" color="primary">
+                Active Chat
+              </Typography>
+              <Box>
+                <IconButton onClick={handleProfileClick}>
+                  <Avatar>
+                    <AccountCircleIcon />
+                  </Avatar>
+                </IconButton>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleClose}
                 >
-                  {new Date(msg.timestamp).toLocaleTimeString()}
-                </Typography>
+                  <MenuItem disabled>Signed in as: {username}</MenuItem>
+                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                </Menu>
               </Box>
             </Box>
-          ))}
-          <div ref={messagesEndRef} />
-        </Box>
 
-        {/* Message Input */}
-        <Box display="flex" gap={1} mt={2}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Type a message..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            multiline
-            maxRows={4}
-          />
-          <Button variant="contained" color="primary" onClick={sendMessage}>
-            <SendIcon />
-          </Button>
+            <Paper
+              sx={{
+                p: 2,
+                bgcolor: "#ffffff",
+                overflowY: "auto",
+                maxHeight: 400,
+                borderRadius: 2,
+              }}
+            >
+              {messages.map((msg, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    justifyContent:
+                      msg.sender === username ? "flex-end" : "flex-start",
+                    mb: 1,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      maxWidth: "70%",
+                      backgroundColor:
+                        msg.sender === username ? "#dcf8c6" : "#e3f2fd",
+                      boxShadow: 1,
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ wordWrap: "break-word" }}>
+                      {msg.content}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        display: "block",
+                        textAlign: "right",
+                        color: "gray",
+                      }}
+                    >
+                      {new Date(msg.timestamp).toLocaleTimeString()}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+              <div ref={messagesEndRef} />
+            </Paper>
+
+            <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Type a message..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                multiline
+                maxRows={4}
+              />
+              <Button variant="contained" color="primary" onClick={sendMessage}>
+                <SendIcon />
+              </Button>
+            </Box>
+          </Paper>
         </Box>
       </Paper>
-    </Container>
+    </Box>
   );
 };
-
 export default ChatApp;
