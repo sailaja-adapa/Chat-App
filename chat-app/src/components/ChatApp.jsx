@@ -20,15 +20,14 @@ import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import io from "socket.io-client";
 
-// Connect to your Socket.io server
 const socket = io("https://serverurl.onrender.com");
 
 const ChatApp = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]); // Active chat messages
-  const [historyChats, setHistoryChats] = useState([]); // Chat history
+  const [messages, setMessages] = useState([]);
+  const [historyChats, setHistoryChats] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const messagesEndRef = useRef(null);
 
@@ -132,10 +131,26 @@ const ChatApp = () => {
         p: 4,
       }}
     >
-      <Paper sx={{ width: "90%", maxWidth: 900, p: 4, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.85)" }}>
+      <Paper
+        sx={{
+          width: "90%",
+          maxWidth: 900,
+          p: 4,
+          borderRadius: 3,
+          backgroundColor: "rgba(255,255,255,0.85)",
+        }}
+      >
         <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2 }}>
-          {/* Chat History Container */}
-          <Paper sx={{ flex: "0 0 250px", p: 2, borderRadius: 2, minHeight: 400, overflowY: "auto" }}>
+          <Paper
+            sx={{
+              flex: "0 0 250px",
+              p: 2,
+              border: "2px solid black",
+              borderRadius: 2,
+              minHeight: 400,
+              overflowY: "auto",
+            }}
+          >
             <Typography variant="h6" fontWeight="bold" mb={1}>
               Chat History
             </Typography>
@@ -164,40 +179,41 @@ const ChatApp = () => {
             </Button>
           </Paper>
 
-          {/* Active Chat Container */}
-          <Paper sx={{ flex: 1, p: 2, borderRadius: 2, display: "flex", flexDirection: "column", minHeight: 400 }}>
-            <Typography variant="h5" fontWeight="bold" color="primary" mb={2}>
-              Active Chat
-            </Typography>
+          <Paper
+            sx={{
+              flex: 1,
+              p: 2,
+              border: "2px solid black",
+              borderRadius: 2,
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 400,
+            }}
+          >
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+              <Typography variant="h5" fontWeight="bold" color="primary">
+                Active Chat
+              </Typography>
+              <Box>
+                <IconButton onClick={handleProfileClick}>
+                  <Avatar>
+                    <AccountCircleIcon />
+                  </Avatar>
+                </IconButton>
+                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+                  <MenuItem disabled>Signed in as: {username}</MenuItem>
+                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                </Menu>
+              </Box>
+            </Box>
 
-            <Paper sx={{ p: 2, overflowY: "auto", flex: 1, borderRadius: 2 }}>
+            <Paper sx={{ p: 2, bgcolor: "#ffffff", overflowY: "auto", flex: 1, borderRadius: 2 }}>
               {messages.map((msg, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    justifyContent: msg.sender === username ? "flex-end" : "flex-start",
-                    mb: 1,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      maxWidth: "70%",
-                      backgroundColor: msg.sender === username ? "#dcf8c6" : msg.sender === "Server" ? "#e0e0e0" : "#e3f2fd",
-                      boxShadow: 1,
-                    }}
-                  >
-                    <Typography variant="body2" sx={{ fontWeight: "bold", mb: 0.5 }}>
-                      {msg.sender}
-                    </Typography>
-                    <Typography variant="body2" sx={{ wordWrap: "break-word" }}>
-                      {msg.content}
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: "block", textAlign: "right", color: "gray" }}>
-                      {new Date(msg.timestamp).toLocaleTimeString()}
-                    </Typography>
+                <Box key={index} sx={{ display: "flex", justifyContent: msg.sender === username ? "flex-end" : "flex-start", mb: 1 }}>
+                  <Box sx={{ p: 1.5, borderRadius: 2, maxWidth: "70%", backgroundColor: msg.sender === username ? "#dcf8c6" : "#e3f2fd", boxShadow: 1 }}>
+                    <Typography variant="body2" sx={{ wordWrap: "break-word", fontWeight: "bold" }}>{msg.sender}</Typography>
+                    <Typography variant="body2" sx={{ wordWrap: "break-word" }}>{msg.content}</Typography>
+                    <Typography variant="caption" sx={{ display: "block", textAlign: "right", color: "gray" }}>{new Date(msg.timestamp).toLocaleTimeString()}</Typography>
                   </Box>
                 </Box>
               ))}
@@ -206,9 +222,7 @@ const ChatApp = () => {
 
             <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
               <TextField fullWidth variant="outlined" placeholder="Type a message..." value={message} onChange={(e) => setMessage(e.target.value)} onKeyDown={handleKeyDown} multiline maxRows={4} />
-              <Button variant="contained" color="primary" onClick={sendMessage}>
-                <SendIcon />
-              </Button>
+              <Button variant="contained" color="primary" onClick={sendMessage}><SendIcon /></Button>
             </Box>
           </Paper>
         </Box>
