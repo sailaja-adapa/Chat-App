@@ -20,15 +20,14 @@ import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import io from "socket.io-client";
 
-// Connect to your Socket.io server
 const socket = io("https://serverurl.onrender.com");
 
 const ChatApp = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]); // Active chat messages
-  const [historyChats, setHistoryChats] = useState([]); // Chat history
+  const [messages, setMessages] = useState([]);
+  const [historyChats, setHistoryChats] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const messagesEndRef = useRef(null);
 
@@ -142,7 +141,6 @@ const ChatApp = () => {
         }}
       >
         <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2 }}>
-          {/* Chat History Container */}
           <Paper
             sx={{
               flex: "0 0 250px",
@@ -181,7 +179,6 @@ const ChatApp = () => {
             </Button>
           </Paper>
 
-          {/* Active Chat Container */}
           <Paper
             sx={{
               flex: 1,
@@ -214,6 +211,7 @@ const ChatApp = () => {
               {messages.map((msg, index) => (
                 <Box key={index} sx={{ display: "flex", justifyContent: msg.sender === username ? "flex-end" : "flex-start", mb: 1 }}>
                   <Box sx={{ p: 1.5, borderRadius: 2, maxWidth: "70%", backgroundColor: msg.sender === username ? "#dcf8c6" : "#e3f2fd", boxShadow: 1 }}>
+                    <Typography variant="body2" sx={{ wordWrap: "break-word", fontWeight: "bold" }}>{msg.sender}</Typography>
                     <Typography variant="body2" sx={{ wordWrap: "break-word" }}>{msg.content}</Typography>
                     <Typography variant="caption" sx={{ display: "block", textAlign: "right", color: "gray" }}>{new Date(msg.timestamp).toLocaleTimeString()}</Typography>
                   </Box>
